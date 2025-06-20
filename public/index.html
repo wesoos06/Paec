@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>PAEC - Registro Rápido</title>
+</head>
+<body>
+  <h1>Registro de Reciclaje</h1>
+  <form id="formulario">
+    <input type="text" name="nombre" placeholder="Nombre" required><br>
+    <select name="tipo" required>
+      <option value="">Tipo de Participante</option>
+      <option>Estudiante</option>
+      <option>Docente</option>
+      <option>Administrativo</option>
+      <option>Directivo</option>
+    </select><br>
+    <select name="material" required>
+      <option value="">Material Reciclado</option>
+      <option>Papel</option>
+      <option>Plástico</option>
+      <option>Vidrio</option>
+    </select><br>
+    <input type="text" name="lugar" placeholder="Punto de recolección" required><br>
+    <button type="submit">Registrar</button>
+  </form>
+
+  <h2>Participantes Registrados</h2>
+  <button onclick="cargarUsuarios()">Cargar todos</button>
+  <select id="filtroTipo" onchange="filtrarTipo()">
+    <option value="">-- Filtrar por tipo --</option>
+    <option>Estudiante</option>
+    <option>Docente</option>
+    <option>Administrativo</option>
+    <option>Directivo</option>
+  </select>
+  <ul id="listaUsuarios"></ul>
+
+  <script>
+    document.getElementById('formulario').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const datos = {
+        nombre: form.nombre.value,
+        tipo: form.tipo.value,
+        material: form.material.value,
+        lugar: form.lugar.value
+      };
+
+      const res = await fetch('/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+
+      const data = await res.json();
+      alert('Usuario registrado: ' + data.nombre);
+      form.reset();
+    });
+
+    async function cargarUsuarios() {
+      const res = await fetch('/usuarios');
+      const data = await res.json();
+      mostrarLista(data);
+    }
+
+    async function filtrarTipo() {
+      const tipo = document.getElementById('filtroTipo').value;
+      const res = await fetch('/usuarios/filtro/' + tipo);
+      const data = await res.json();
+      mostrarLista(data);
+    }
+
+    function mostrarLista(usuarios) {
+      const lista = document.getElementById('listaUsuarios');
+      lista.innerHTML = '';
+      usuarios.forEach(u => {
+        const li = document.createElement('li');
+        li.textContent = `${u.nombre} (${u.tipo}) - ${u.material} - ${u.lugar}`;
+        lista.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
